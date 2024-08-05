@@ -93,4 +93,19 @@ router.put("/", (req, res) => {
   });
 });
 
+router.put('/image', (req,res) => {
+    if (!checkBody(req.body, ['token', 'image'])){
+        res.json({ result: false, error: 'Missing or empty fields' });
+        return;
+    };
+    UserPro.updateOne({token: req.body.token}, {$set: {image: req.body.image}})
+    .then((data)=>{
+        if(data){
+            UserPro.findOne({token: req.body.token}).then(res.json({result: true, image: req.body.image}));
+        } else {
+            res.json({result: false, error: "Erreur sur l'image"})
+        }
+    })
+})
+
 module.exports = router;

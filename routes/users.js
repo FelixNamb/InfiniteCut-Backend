@@ -7,7 +7,7 @@ const { checkBody } = require("../module/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
 
-router.get("/users", (req, res) => {
+router.get("/", (req, res) => {
   User.find({}).then((data) => {
     res.json({ result: true, users: data });
   });
@@ -147,5 +147,22 @@ router.put("/formule/delete", (req, res) => {
     }
   });
 });
+
+router.put('/formule', (req,res) => {
+  let formuleExisting;
+  User.findOne({token: req.body.token}).populate('formule')
+  .then(data => {
+    if(data){
+      formuleExisting = data.formule._ObjectId;
+      User.updateOne({token: req.body.token}, {$pull: {formule: formuleExisting}})
+      .then(()=>{
+        User.updateOne({token: req.body.token}, {$push: {formule: req.body._ObjectId}})
+        .then(res.json({result : true}));
+      })
+    } else {
+      res.json({result: false});
+    }
+  });
+})
 
 module.exports = router;
