@@ -32,4 +32,19 @@ router.post("/rdvs", (req, res) => {
   });
 });
 
+router.put("/rdvs", (req, res) => {
+  Rdv.updateOne({ _id: req.body.id }, { $set: { date: req.body.date } }).then(
+    (data) => {
+      if (data) {
+        Rdv.findOne({ _id: req.body.id }).then(res.json({ result: true }));
+      } else {
+        res.json({
+          result: false,
+          error: "Aucune modification effectuée",
+        });
+      }
+    }
+  );
+});
+
 module.exports = router;

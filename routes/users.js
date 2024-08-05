@@ -87,7 +87,7 @@ router.delete("/users/myCard", (req, res) => {
   });
 });
 
-router.post("/users/myCard", (req, res) => {
+router.post("/myCard", (req, res) => {
   if (
     !checkBody(req.body, [
       "numCarte",
@@ -112,6 +112,40 @@ router.post("/users/myCard", (req, res) => {
       });
     } else {
       res.json({ result: false, error: "Carte déjà existante" });
+    }
+  });
+});
+
+router.put("/", (req, res) => {
+  User.updateOne(
+    { token: req.body.token },
+    { $set: { formules: req.body._ObjectId } }
+  ).then((data) => {
+    if (data) {
+      User.findOne({ token: req.body.token })
+        .populate("formule")
+        .then(res.json({ result: true }));
+    } else {
+      res.json({
+        result: false,
+        error: "Aucune modification effectuée",
+      });
+    }
+  });
+});
+
+router.put("/formule/delete", (req, res) => {
+  User.updateOne(
+    { token: req.body.token },
+    { $pull: { formule: req.body.formule } }
+  ).then((data) => {
+    if (!data.formule) {
+      res.json({ result: true });
+    } else {
+      res.json({
+        result: false,
+        error: "Aucun compte trouvé",
+      });
     }
   });
 });
