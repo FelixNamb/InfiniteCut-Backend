@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const formuleSchema = mongoose.Schema({
-  _id: ObjectId,
   nom: String,
   prix: Number,
   details: {

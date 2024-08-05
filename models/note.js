@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const noteSchema = mongoose.Schema({
   etoiles: Number,
@@ -8,6 +8,5 @@ const noteSchema = mongoose.Schema({
 });
 
 const Note = mongoose.model("notes", noteSchema);
-
 
 module.exports = Note;
