@@ -150,7 +150,6 @@ router.put("/formule/delete", (req, res) => {
   });
 });
 
-
 router.put('/formule', (req,res) => {
   let formuleExisting;
   User.findOne({token: req.body.token}).populate('formule')
