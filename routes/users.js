@@ -1,8 +1,6 @@
 var express = require("express");
 var router = express.Router();
 
-// PUT /user/ ⇒ Permet de mettre à jour les infos de User
-
 require("../models/connection");
 const User = require("../models/user");
 const { checkBody } = require("../module/checkBody");
@@ -60,7 +58,7 @@ router.post("/signin", (req, res) => {
   });
 });
 
-router.delete("/users", (req, res) => {
+router.delete("/", (req, res) => {
   if (!checkBody(req.body)) {
     res.json({ result: false, error: "Champs manquants" });
     return;
@@ -70,7 +68,7 @@ router.delete("/users", (req, res) => {
   });
 });
 
-router.delete("/users/myCard", (req, res) => {
+router.delete("/myCard", (req, res) => {
   if (
     !checkBody(req.body, [
       "numCarte",
