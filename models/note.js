@@ -1,9 +1,13 @@
+const mongoose = require('mongoose');
+
 const noteSchema = mongoose.Schema({
-  _id: ObjectifId,
   etoiles: Number,
   commentaire: String,
-  userPro: { type: mongoose.Schema.Types.ObjectiId, ref: "userPro" },
-  user: { type: mongoose.Schema.Types.ObjectiId, ref: "user" },
+  userPro: { type: mongoose.Schema.Types.ObjectId, ref: "userPro" },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
 });
 
 const Note = mongoose.model("notes", noteSchema);
+
+
+module.exports = Note;

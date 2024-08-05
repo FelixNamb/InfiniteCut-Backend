@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const formuleSchema = mongoose.Schema({
   _id: ObjectId,
   nom: String,
@@ -16,3 +18,5 @@ const formuleSchema = mongoose.Schema({
 });
 
 const Formule = mongoose.model("formules", formuleSchema);
+
+module.exports = Formule;
