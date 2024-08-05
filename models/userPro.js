@@ -17,6 +17,6 @@ const userProSchema = mongoose.Schema({
   image: String,
 });
 
-const userPro = mongoose.model("userpros", userProSchema);
+const UserPro = mongoose.model("userpros", userProSchema);
 
-module.exports = userPro;
+module.exports = UserPro;

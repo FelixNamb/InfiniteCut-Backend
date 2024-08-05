@@ -76,9 +76,24 @@ router.put('/', (req, res) => {
             if(data.formules.some((elt) => elt._ObjectId === req.body._ObjectId)){
                 res.json({result: true});
             } else {
-                res.json({result: false, error: "Vous proposez déjà la formule sélectionné"});
+                res.json({result: false, error: "Vous proposez déjà la formule sélectionnée"});
             }
-        })
+        });
+    });
+});
+
+router.put('/image', (req,res) => {
+    if (!checkBody(req.body, ['token', 'image'])){
+        res.json({ result: false, error: 'Missing or empty fields' });
+        return;
+    };
+    UserPro.updateOne({token: req.body.token}, {$set: {image: req.body.image}})
+    .then((data)=>{
+        if(data){
+            UserPro.findOne({token: req.body.token}).then(res.json({result: true, image: req.body.image}));
+        } else {
+            res.json({result: false, error: "Erreur sur l'image"})
+        }
     })
 })
 

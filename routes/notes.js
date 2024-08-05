@@ -3,6 +3,7 @@ var express = require("express");
 var router = express.Router();
 require("../models/connection");
 const Note = require("../models/note");
+const User = require("../models/user");
 const { checkBody } = require("../module/checkBody");
 
 router.get("/notes", (req, res) => {
@@ -17,13 +18,24 @@ router.post("/", (req, res) => {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
-
-  Note.findOne({ token, commentaire, _ObjectId }).then((data) => {
-    if (!data) {
-      const newNote = new Note({
-        etoiles,
-        commentaire,
-      });
-    }
+  User.findOne({token}).then(data => {
+    if(data){
+        Note.findOne({commentaire, etoiles, _ObjectId, user: data._ObjectId})
+        .then(result => {
+            if(!result){
+                const newNote = new Note({
+                    etoiles,
+                    commentaire,
+                    userPro: _ObjectId,
+                    user: data._ObjectId,
+                });
+                newNote.save().then(res.json({result: true}));
+            }
+        })
+    } else {
+        res.json({result: false, error: "Mauvais"});
+    };
   });
 });
+
+module.exports = router;
