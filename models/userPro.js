@@ -1,5 +1,4 @@
 const userProSchema = mongoose.Schema({
-  _id: ObjectiId,
   prenom: String,
   nom: String,
   codePostal: Number,
