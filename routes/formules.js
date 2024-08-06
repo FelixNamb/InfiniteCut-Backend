@@ -4,8 +4,6 @@ var router = express.Router();
 const Formule = require("../models/formule");
 
 router.get("/", (req, res) => {
-  const { email } = req.body;
-
   Formule.find({}).then((data) => {
     //objet vide pour prendre tous les documents à l'interieur
     if (data) {
@@ -13,7 +11,6 @@ router.get("/", (req, res) => {
     } else {
       res.json({ result: false, error: "Pas de formules trouvées" });
     }
-    res.json({ result: true, formule: data.formule });
   });
 });
 
