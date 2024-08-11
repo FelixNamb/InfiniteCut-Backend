@@ -14,6 +14,7 @@ router.get("/", (req, res) => {
 });
 
 router.post("/signup", (req, res) => {
+  console.log(req.body.email, req.body.mobile, req.body.motDePasse);
   if (!checkBody(req.body, ["email", "mobile", "motDePasse"])) {
     res.json({ result: false, error: "Champs manquants" });
     return;
