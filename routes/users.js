@@ -42,7 +42,7 @@ router.post("/signup", (req, res) => {
 });
 
 router.post("/signin", (req, res) => {
-  if (!checkBody(req.body, ["email", "mot de passe"])) {
+  if (!checkBody(req.body, ["email", "motDePasse"])) {
     res.json({ result: false, error: "Champs manquants" });
     return;
   }
@@ -148,21 +148,26 @@ router.put("/formule/delete", (req, res) => {
   });
 });
 
-router.put('/formule', (req,res) => {
+router.put("/formule", (req, res) => {
   let formuleExisting;
-  User.findOne({token: req.body.token}).populate('formule')
-  .then(data => {
-    if(data){
-      formuleExisting = data.formule._ObjectId;
-      User.updateOne({token: req.body.token}, {$pull: {formule: formuleExisting}})
-      .then(()=>{
-        User.updateOne({token: req.body.token}, {$push: {formule: req.body._ObjectId}})
-        .then(res.json({result : true}));
-      })
-    } else {
-      res.json({result: false});
-    }
-  });
-})
+  User.findOne({ token: req.body.token })
+    .populate("formule")
+    .then((data) => {
+      if (data) {
+        formuleExisting = data.formule._ObjectId;
+        User.updateOne(
+          { token: req.body.token },
+          { $pull: { formule: formuleExisting } }
+        ).then(() => {
+          User.updateOne(
+            { token: req.body.token },
+            { $push: { formule: req.body._ObjectId } }
+          ).then(res.json({ result: true }));
+        });
+      } else {
+        res.json({ result: false });
+      }
+    });
+});
 
 module.exports = router;
