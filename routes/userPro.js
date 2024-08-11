@@ -7,7 +7,7 @@ const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
 
 router.post("/signup", (req, res) => {
-  const { prenom, nom, codePostal, mobile, email, motDePasse } = req.body; //clean code pour avoir des variables égales au req.body
+  const { prenom, nom, codePostal, mobile, email} = req.body; //clean code pour avoir des variables égales au req.body
   if (
     !checkBody(req.body, ["prenom", "nom", "codePostal", "mobile", "email"])
   ) {
@@ -17,7 +17,6 @@ router.post("/signup", (req, res) => {
 
   UserPro.findOne({ codePostal, mobile, email }).then((data) => {
     if (!data) {
-      const hash = bcrypt.hashSync(motDePasse, 10);
 
       const newUserPro = new UserPro({
         prenom,
@@ -27,7 +26,7 @@ router.post("/signup", (req, res) => {
         email,
         adresse: "",
         token: uid2(32),
-        motDePasse: hash,
+        motDePasse: "",
         mesRdv: [],
         mesNotes: [],
         noteGlobale: 0,
