@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const formuleSchema = mongoose.Schema({
   nom: String,
-  prix: Number,
+  prix: String,
   details: {
     passageMax: Number,
     engagement: String,

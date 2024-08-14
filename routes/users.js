@@ -45,7 +45,7 @@ router.post("/signup", (req, res) => {
 });
 
 router.post("/signin", (req, res) => {
-  if (!checkBody(req.body, ["email", "mot de passe"])) {
+  if (!checkBody(req.body, ["email", "motDePasse"])) {
     res.json({ result: false, error: "Champs manquants" });
     return;
   }
@@ -120,7 +120,7 @@ router.post("/myCard", (req, res) => {
 router.put("/", (req, res) => {
   User.updateOne(
     { token: req.body.token },
-    { $set: { formules: req.body._ObjectId } }
+    { $set: { formules: req.body._id } }
   ).then((data) => {
     if (data) {
       User.findOne({ token: req.body.token })
@@ -166,6 +166,19 @@ router.put('/formule', (req,res) => {
       res.json({result: false});
     }
   });
+});
+
+router.get("/:token", (req,res) => {
+  const {token} = req.params;
+  User.findOne({token})
+  .populate("formule")
+  .then(data => {
+    if(data){
+      res.json({result:true, user: data});
+    } else {
+      res.json({result: false});
+    }
+  })
 })
 
 module.exports = router;
