@@ -171,4 +171,17 @@ router.put("/formule", (req, res) => {
     });
 });
 
+router.get("/:token", (req,res) => {
+  const {token} = req.params;
+  User.findOne({token})
+  .populate("formule")
+  .then(data => {
+    if(data){
+      res.json({result:true, user: data});
+    } else {
+      res.json({result: false});
+    }
+  })
+})
+
 module.exports = router;
