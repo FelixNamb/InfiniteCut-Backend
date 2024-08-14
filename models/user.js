@@ -8,9 +8,9 @@ const userSchema = mongoose.Schema({
   formule: { type: mongoose.Schema.Types.ObjectId, ref: "formules" },
   moyenPaiement: [
     {
-      numCarte: Number,
+      numCarte: String,
       dateExpiration: String,
-      cvc: Number,
+      cvc: String,
     },
   ],
   salonLike: [{ type: mongoose.Schema.Types.ObjectId, ref: "userPro" }],

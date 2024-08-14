@@ -3,8 +3,7 @@ const mongoose = require("mongoose");
 const userProSchema = mongoose.Schema({
   prenom: String,
   nom: String,
-  codePostal: String,
-  mobile: Number,
+  mobile: String,
   email: String,
   token: String,
   adresse: String,
@@ -13,8 +12,7 @@ const userProSchema = mongoose.Schema({
   notes: [{ type: mongoose.Schema.Types.ObjectId, ref: "notes" }],
   noteGlobale: Number,
   formules: [{ type: mongoose.Schema.Types.ObjectId, ref: "formules" }],
-  vente: Boolean,
-  image: String,
+  nomEnseigne: String,
 });
 
 const UserPro = mongoose.model("userpros", userProSchema);

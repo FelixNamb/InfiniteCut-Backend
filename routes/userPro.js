@@ -8,41 +8,50 @@ const bcrypt = require("bcrypt");
 
 router.post("/signup", (req, res) => {
   console.log(req.body);
-  const { prenom, nom, codePostal, mobile, email } = req.body;
+  const { prenom, nom, mobile, email, adresse, nomEnseigne } = req.body; //clean code pour avoir des variables égales au req.body
   if (
-    !checkBody(req.body, ["prenom", "nom", "codePostal", "mobile", "email"])
+    !checkBody(req.body, [
+      "prenom",
+      "nom",
+      "adresse",
+      "mobile",
+      "email",
+      "nomEnseigne",
+    ])
   ) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
 
-  UserPro.findOne({ codePostal, mobile, email }).then((data) => {
+  UserPro.findOne({ nomEnseigne, mobile, email }).then((data) => {
+    console.log(data);
     if (!data) {
       const newUserPro = new UserPro({
         prenom,
         nom,
-        codePostal,
         mobile,
         email,
-        adresse: "",
+        adresse,
         token: uid2(32),
         motDePasse: "",
         mesRdv: [],
         mesNotes: [],
         noteGlobale: 0,
         formules: [],
-        vente: false,
-        image: null,
+        nomEnseigne,
       });
-
-      newUserPro.save().then((data) => {
-        res.json({ result: true, token: data.token });
-      });
-    } else {
-      res.json({
-        result: false,
-        message: "Ce compte existe déjà. Voulez vous vous connecter ?",
-      });
+      newUserPro
+        .save()
+        .then((data) => {
+          res.json({ result: true, token: data.token });
+        })
+        .catch((error) => {
+          // Gestion des erreurs
+          console.error("Erreur lors de la création de l'utilisateur:", error);
+          res
+            .status(500)
+            .json({ result: false, error: "Internal server error" });
+        });
     }
   });
 });
@@ -92,34 +101,38 @@ router.put("/", (req, res) => {
   });
 });
 
-router.put('/image', (req,res) => {
-    if (!checkBody(req.body, ['token', 'image'])){
-        res.json({ result: false, error: 'Missing or empty fields' });
-        return;
-    };
-    UserPro.updateOne({token: req.body.token}, {$set: {image: req.body.image}})
-    .then((data)=>{
-        if(data){
-            UserPro.findOne({token: req.body.token}).then(res.json({result: true, image: req.body.image}));
-        } else {
-            res.json({result: false, error: "Erreur sur l'image"})
-        }
-    })
+router.put("/image", (req, res) => {
+  if (!checkBody(req.body, ["token", "image"])) {
+    res.json({ result: false, error: "Missing or empty fields" });
+    return;
+  }
+  UserPro.updateOne(
+    { token: req.body.token },
+    { $set: { image: req.body.image } }
+  ).then((data) => {
+    if (data) {
+      UserPro.findOne({ token: req.body.token }).then(
+        res.json({ result: true, image: req.body.image })
+      );
+    } else {
+      res.json({ result: false, error: "Erreur sur l'image" });
+    }
+  });
 });
 
-router.get("/:token", (req,res) => {
-  const {token} = req.params;
-  UserPro.findOne({token})
-  .populate("formules")
-  .populate("notes")
-  .populate("rdvs")
-  .then(data => {
-    if(data){
-      res.json({result:true, user: data});
-    } else {
-      res.json({result: false});
-    }
-  })
-})
+router.get("/:token", (req, res) => {
+  const { token } = req.params;
+  UserPro.findOne({ token })
+    .populate("formules")
+    .populate("notes")
+    .populate("rdvs")
+    .then((data) => {
+      if (data) {
+        res.json({ result: true, user: data });
+      } else {
+        res.json({ result: false });
+      }
+    });
+});
 
 module.exports = router;
