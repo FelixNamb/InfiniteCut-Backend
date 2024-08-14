@@ -7,24 +7,15 @@ const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
 
 router.post("/signup", (req, res) => {
-  console.log(req.body);
   const { prenom, nom, mobile, email, adresse, nomEnseigne } = req.body; //clean code pour avoir des variables égales au req.body
   if (
-    !checkBody(req.body, [
-      "prenom",
-      "nom",
-      "adresse",
-      "mobile",
-      "email",
-      "nomEnseigne",
-    ])
+    !checkBody(req.body, ["prenom", "nom", "adresse", "mobile", "email", "nomEnseigne"])
   ) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
 
   UserPro.findOne({ nomEnseigne, mobile, email }).then((data) => {
-    console.log(data);
     if (!data) {
       const newUserPro = new UserPro({
         prenom,
@@ -74,7 +65,7 @@ router.post("/signin", (req, res) => {
 router.get("/", (req, res) => {
   UserPro.find({})
     .populate("notes")
-    .populate("rdv")
+    .populate("rdvs")
     .populate("formules")
     .then((data) => {
       res.json({ result: true, users: data });
@@ -120,18 +111,35 @@ router.put("/image", (req, res) => {
   });
 });
 
-router.get("/:token", (req, res) => {
-  const { token } = req.params;
-  UserPro.findOne({ token })
-    .populate("formules")
-    .populate("notes")
-    .populate("rdvs")
+router.get("/:token", (req,res) => {
+  const {token} = req.params;
+  UserPro.findOne({token})
+  .populate("formules")
+  .populate("notes")
+  .populate("rdvs")
+  .then(data => {
+    if(data){
+      res.json({result:true, user: data});
+    } else {
+      res.json({result: false});
+    }
+  })
+});
+
+router.get("/userpro/:nomEnseigne", (req, res) => {
+  const nomEnseigne = req.params.nomEnseigne;
+  UserPro.findOne({ nomEnseigne: new RegExp(`^${nomEnseigne}$`, "i") })
     .then((data) => {
       if (data) {
+        console.log("Je passe ici")
         res.json({ result: true, user: data });
       } else {
-        res.json({ result: false });
+        console.log("Je passe là")
+        res.json({ result: false, error: "Nom d'enseigne non valide" });
       }
+    })
+    .catch((error) => {
+      res.json({ result: false, error: "Erreur lors de la recherche" });
     });
 });
 
