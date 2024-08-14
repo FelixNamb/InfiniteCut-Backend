@@ -105,6 +105,21 @@ router.put('/image', (req,res) => {
             res.json({result: false, error: "Erreur sur l'image"})
         }
     })
+});
+
+router.get("/:token", (req,res) => {
+  const {token} = req.params;
+  UserPro.findOne({token})
+  .populate("formules")
+  .populate("notes")
+  .populate("rdvs")
+  .then(data => {
+    if(data){
+      res.json({result:true, user: data});
+    } else {
+      res.json({result: false});
+    }
+  })
 })
 
 module.exports = router;

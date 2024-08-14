@@ -8,7 +8,11 @@ const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
 
 router.get("/", (req, res) => {
-  User.find({}).then((data) => {
+  User.find({})
+  .populate("mesRdvs")
+  .populate("formule")
+  .populate("salonLike")
+  .then((data) => {
     res.json({ result: true, users: data });
   });
 });
@@ -28,7 +32,7 @@ router.post("/signup", (req, res) => {
         mobile: req.body.mobile,
         motDePasse: hash,
         mesRDV: [],
-        formule: null,
+        formule: "",
         moyenPaiement: [],
         salonLike: [],
         token: uid2(32),
@@ -60,86 +64,102 @@ router.post("/signin", (req, res) => {
 });
 
 router.delete("/", (req, res) => {
-  if (!checkBody(req.body)) {
+  if (!checkBody(req.body, ["token"])) {
     res.json({ result: false, error: "Champs manquants" });
     return;
   }
-  User.deleteOne({ email: req.body.email }).then(() => {
+  User.deleteOne({ token: req.body.token }).then(() => {
     res.json({ result: true });
   });
 });
 
-router.delete("/myCard", (req, res) => {
+router.put("/myCard/delete", (req, res) => {
   if (
     !checkBody(req.body, [
       "numCarte",
-      "dateExpirationMois",
-      "dateExpirationAnnee",
-      "CVC",
+      "dateExpiration",
+      "cvc",
     ])
   ) {
     res.json({ result: false, error: "Aucun moyen de paiement ajouté" });
     return;
   }
-  User.deleteOne({ moyenPaiement: req.body }).then(() => {
-    res.json({ result: true });
+  User.findOne({ token: req.body.token }).then((data) => {
+    if (data) {
+      User.updateOne({token: req.body.token},
+        {$pull: {moyenPaiement: {
+          numCarte: req.body.numCarte,
+          dateExpiration: req.body.dateExpiration,
+          cvc: req.body.cvc
+        }}})
+      .then(data => {
+        if(data.modifiedCount)
+          res.json({result:true, message: "Carte supprimée"})
+      })
+    } else {
+      res.json({ result: false, error: "La carte n'existe pas" });
+    }
   });
 });
 
-router.post("/myCard", (req, res) => {
+router.put("/myCard", (req, res) => {
   if (
     !checkBody(req.body, [
       "numCarte",
-      "dateExpirationMois",
-      "dateExpirationAnnee",
-      "CVC",
+      "dateExpiration",
+      "cvc",
     ])
   ) {
     res.json({ result: false, error: "Aucun moyen de paiement ajouté" });
     return;
   }
-  User.findOne({ moyenPaiement: req.body.moyenPaiement }).then((data) => {
-    if (data === null) {
-      const newCard = new Card({
-        numCarte: req.body.numCarte,
-        dateExpirationMois: req.body.dateExpirationMois,
-        dateExpirationAnnee: req.body.dateExpirationAnnee,
-        CVC: req.body.CVC,
-      });
-      newCard.save().then(() => {
-        res.json({ result: true });
-      });
+  User.findOne({ token: req.body.token }).then((data) => {
+    if (data) {
+      User.updateOne({token: req.body.token},
+        {$push: {moyenPaiement: {
+          numCarte: req.body.numCarte,
+          dateExpiration: req.body.dateExpiration,
+          cvc: req.body.cvc
+        }}})
+      .then(data => {
+        if(data.modifiedCount)
+          res.json({result:true})
+      })
     } else {
       res.json({ result: false, error: "Carte déjà existante" });
     }
   });
 });
 
-router.put("/", (req, res) => {
-  User.updateOne(
-    { token: req.body.token },
-    { $set: { formules: req.body._id } }
-  ).then((data) => {
-    if (data) {
-      User.findOne({ token: req.body.token })
-        .populate("formule")
-        .then(res.json({ result: true }));
-    } else {
-      res.json({
-        result: false,
-        error: "Aucune modification effectuée",
-      });
-    }
-  });
-});
+// router.put("/", (req, res) => {
+//   User.updateOne(
+//     { token: req.body.token },
+//     { $set: { formules: req.body._id } }
+//   ).then((data) => {
+//     if (data) {
+//       User.findOne({ token: req.body.token })
+//         .populate("formule")
+//         .then(res.json({ result: true }));
+//     } else {
+//       res.json({
+//         result: false,
+//         error: "Aucune modification effectuée",
+//       });
+//     }
+//   });
+// });
 
 router.put("/formule/delete", (req, res) => {
-  User.updateOne(
-    { token: req.body.token },
-    { $pull: { formule: req.body.formule } }
-  ).then((data) => {
-    if (!data.formule) {
-      res.json({ result: true });
+  User.findOne({ token: req.body.token })
+  .populate('formule')
+  .then((data) => {
+    if (data) {
+      User.updateOne({token : req.body.token},{ $set: { formule: null } })
+      .then(change => {
+        if(!change.formule){
+          res.json({ result: true });
+        }
+      })
     } else {
       res.json({
         result: false,
@@ -150,22 +170,16 @@ router.put("/formule/delete", (req, res) => {
 });
 
 router.put("/formule", (req, res) => {
-  let formuleExisting;
   User.findOne({ token: req.body.token })
     .populate("formule")
     .then((data) => {
+      console.log(data);
       if (data) {
-        formuleExisting = data.formule._ObjectId;
         User.updateOne(
           { token: req.body.token },
-          { $pull: { formule: formuleExisting } }
-        ).then(() => {
-          User.updateOne(
-            { token: req.body.token },
-            { $push: { formule: req.body._ObjectId } }
-          ).then(res.json({ result: true }));
-        });
-      } else {
+          { $set: { formule: req.body._ObjectId } }
+        ).then(res.json({ result: true }));
+        } else {
         res.json({ result: false });
       }
     });

@@ -9,9 +9,8 @@ const userSchema = mongoose.Schema({
   moyenPaiement: [
     {
       numCarte: Number,
-      dateExpirationMois: Number,
-      dateExpirationAnnee: Number,
-      CVC: Number,
+      dateExpiration: String,
+      cvc: Number,
     },
   ],
   salonLike: [{ type: mongoose.Schema.Types.ObjectId, ref: "userPro" }],
