@@ -92,23 +92,34 @@ router.put("/", (req, res) => {
   });
 });
 
-router.put("/image", (req, res) => {
-  if (!checkBody(req.body, ["token", "image"])) {
-    res.json({ result: false, error: "Missing or empty fields" });
-    return;
-  }
-  UserPro.updateOne(
-    { token: req.body.token },
-    { $set: { image: req.body.image } }
-  ).then((data) => {
-    if (data) {
-      UserPro.findOne({ token: req.body.token }).then(
-        res.json({ result: true, image: req.body.image })
-      );
-    } else {
-      res.json({ result: false, error: "Erreur sur l'image" });
-    }
-  });
+router.put('/image', (req,res) => {
+    if (!checkBody(req.body, ['token', 'image'])){
+        res.json({ result: false, error: 'Missing or empty fields' });
+        return;
+    };
+    UserPro.updateOne({token: req.body.token}, {$set: {image: req.body.image}})
+    .then((data)=>{
+        if(data){
+            UserPro.findOne({token: req.body.token}).then(res.json({result: true, image: req.body.image}));
+        } else {
+            res.json({result: false, error: "Erreur sur l'image"})
+        }
+    })
 });
+
+router.get("/:token", (req,res) => {
+  const {token} = req.params;
+  UserPro.findOne({token})
+  .populate("formules")
+  .populate("notes")
+  .populate("rdvs")
+  .then(data => {
+    if(data){
+      res.json({result:true, user: data});
+    } else {
+      res.json({result: false});
+    }
+  })
+})
 
 module.exports = router;

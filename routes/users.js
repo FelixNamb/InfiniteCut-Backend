@@ -8,9 +8,13 @@ const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
 
 router.get("/", (req, res) => {
-  User.find({}).then((data) => {
-    res.json({ result: true, users: data });
-  });
+  User.find({})
+    .populate("mesRdvs")
+    .populate("formule")
+    .populate("salonLike")
+    .then((data) => {
+      res.json({ result: true, users: data });
+    });
 });
 
 router.post("/signup", (req, res) => {
@@ -28,7 +32,7 @@ router.post("/signup", (req, res) => {
         mobile: req.body.mobile,
         motDePasse: hash,
         mesRDV: [],
-        formule: null,
+        formule: "",
         moyenPaiement: [],
         salonLike: [],
         token: uid2(32),
@@ -60,110 +64,120 @@ router.post("/signin", (req, res) => {
 });
 
 router.delete("/", (req, res) => {
-  if (!checkBody(req.body)) {
+  if (!checkBody(req.body, ["token"])) {
     res.json({ result: false, error: "Champs manquants" });
     return;
   }
-  User.deleteOne({ email: req.body.email }).then(() => {
+  User.deleteOne({ token: req.body.token }).then(() => {
     res.json({ result: true });
   });
 });
 
-router.delete("/myCard", (req, res) => {
-  if (
-    !checkBody(req.body, [
-      "numCarte",
-      "dateExpirationMois",
-      "dateExpirationAnnee",
-      "CVC",
-    ])
-  ) {
+router.put("/myCard/delete", (req, res) => {
+  if (!checkBody(req.body, ["numCarte", "dateExpiration", "cvc"])) {
     res.json({ result: false, error: "Aucun moyen de paiement ajouté" });
     return;
   }
-  User.deleteOne({ moyenPaiement: req.body }).then(() => {
-    res.json({ result: true });
+  User.findOne({ token: req.body.token }).then((data) => {
+    if (data) {
+      User.updateOne(
+        { token: req.body.token },
+        {
+          $pull: {
+            moyenPaiement: {
+              numCarte: req.body.numCarte,
+              dateExpiration: req.body.dateExpiration,
+              cvc: req.body.cvc,
+            },
+          },
+        }
+      ).then((data) => {
+        if (data.modifiedCount)
+          res.json({ result: true, message: "Carte supprimée" });
+      });
+    } else {
+      res.json({ result: false, error: "La carte n'existe pas" });
+    }
   });
 });
 
-// router.put("/myCard/:token", (req, res) => {
-//   console.log("bjr je suis la route put");
-//   if (!checkBody(req.body, ["numCarte", "dateExpiration", "CVC"])) {
-//     res.json({ result: false, error: "Aucun moyen de paiement ajouté" });
-//     return;
-//   }
-//   User.findOne({ token: req.params.token }).then((data) => {
-//     console.log(data);
-//     if (data === null) {
-//       //utiliser $push ou $set pour mettre les champs à jour
-//       // const newCard = new Card({
-//         numCarte: req.body.numCarte,
-//         dateExpiration: req.body.expiration,
-//         CVC: req.body.CVC,
-//       // });
-//       newCard.save().then(() => {
-//         res.json({ result: true });
-//       });
+router.put("/myCard", (req, res) => {
+  if (!checkBody(req.body, ["numCarte", "dateExpiration", "cvc"])) {
+    res.json({ result: false, error: "Aucun moyen de paiement ajouté" });
+    return;
+  }
+  User.findOne({ token: req.body.token }).then((data) => {
+    if (data) {
+      User.updateOne(
+        { token: req.body.token },
+        {
+          $push: {
+            moyenPaiement: {
+              numCarte: req.body.numCarte,
+              dateExpiration: req.body.dateExpiration,
+              cvc: req.body.cvc,
+            },
+          },
+        }
+      ).then((data) => {
+        if (data.modifiedCount) res.json({ result: true });
+      });
+    } else {
+      res.json({ result: false, error: "Carte déjà existante" });
+    }
+  });
+});
+
+// router.put("/", (req, res) => {
+//   User.updateOne(
+//     { token: req.body.token },
+//     { $set: { formules: req.body._id } }
+//   ).then((data) => {
+//     if (data) {
+//       User.findOne({ token: req.body.token })
+//         .populate("formule")
+//         .then(res.json({ result: true }));
 //     } else {
-//       res.json({ result: false, error: "Carte déjà existante" });
+//       res.json({
+//         result: false,
+//         error: "Aucune modification effectuée",
+//       });
 //     }
 //   });
 // });
 
-router.put("/", (req, res) => {
-  User.updateOne(
-    { token: req.body.token },
-    { $set: { formules: req.body._id } }
-  ).then((data) => {
-    if (data) {
-      User.findOne({ token: req.body.token })
-        .populate("formule")
-        .then(res.json({ result: true }));
-    } else {
-      res.json({
-        result: false,
-        error: "Aucune modification effectuée",
-      });
-    }
-  });
-});
-
 router.put("/formule/delete", (req, res) => {
-  User.updateOne(
-    { token: req.body.token },
-    { $pull: { formule: req.body.formule } }
-  ).then((data) => {
-    if (!data.formule) {
-      res.json({ result: true });
-    } else {
-      res.json({
-        result: false,
-        error: "Aucun compte trouvé",
-      });
-    }
-  });
-});
-
-router.put("/formule", (req, res) => {
-  let formuleExisting;
   User.findOne({ token: req.body.token })
     .populate("formule")
     .then((data) => {
-      console.log("data ===>", data);
-      //le if ne fonctionne que si une formule est deja enregistrée
-      //donc comme formule est initié a null -> si !data je mets à jour le champ formule
-      //avec la formule sélectionnée
       if (data) {
-        formuleExisting = data.formule._ObjectId;
         User.updateOne(
           { token: req.body.token },
-          { $pull: { formule: formuleExisting } }
-        ).then(() => {
-          User.updateOne(
-            { token: req.body.token },
-            { $push: { formule: req.body._ObjectId } }
-          ).then(res.json({ result: true }));
+          { $set: { formule: null } }
+        ).then((change) => {
+          if (!change.formule) {
+            res.json({ result: true });
+          }
         });
+      } else {
+        res.json({
+          result: false,
+          error: "Aucun compte trouvé",
+        });
+      }
+    });
+});
+
+router.put("/formule", (req, res) => {
+  User.findOne({ token: req.body.token })
+    .populate("formule")
+    .then((data) => {
+      console.log(data);
+      if (data) {
+        User.updateOne(
+          { token: req.body.token },
+          { $set: { formule: req.body._ObjectId } }
+        ).then(res.json({ result: true }));
       } else {
         res.json({ result: false });
       }
