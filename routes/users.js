@@ -118,7 +118,7 @@ router.post("/myCard", (req, res) => {
 router.put("/", (req, res) => {
   User.updateOne(
     { token: req.body.token },
-    { $set: { formules: req.body._ObjectId } }
+    { $set: { formules: req.body._id } }
   ).then((data) => {
     if (data) {
       User.findOne({ token: req.body.token })

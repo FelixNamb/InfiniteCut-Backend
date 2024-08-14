@@ -3,8 +3,8 @@ var router = express.Router();
 
 const Formule = require("../models/formule");
 
-router.get("/", (req, res) => {
-  Formule.find({}).then((data) => {
+router.get("/:nom", (req, res) => {
+  Formule.findOne({nom : req.params.nom}).then((data) => {
     //objet vide pour prendre tous les documents à l'interieur
     if (data) {
       res.json({ result: true, formule: data });

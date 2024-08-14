@@ -5,7 +5,7 @@ const userSchema = mongoose.Schema({
   motDePasse: String,
   mobile: Number,
   mesRDV: [{ type: mongoose.Schema.Types.ObjectId, ref: "rdvs" }],
-  formule: { type: mongoose.Schema.Types.ObjectId, ref: "notes" },
+  formule: { type: mongoose.Schema.Types.ObjectId, ref: "formules" },
   moyenPaiement: [
     {
       numCarte: Number,
