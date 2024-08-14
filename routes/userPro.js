@@ -7,7 +7,8 @@ const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
 
 router.post("/signup", (req, res) => {
-  const { prenom, nom, codePostal, mobile, email} = req.body; //clean code pour avoir des variables égales au req.body
+  console.log(req.body);
+  const { prenom, nom, codePostal, mobile, email } = req.body; //clean code pour avoir des variables égales au req.body
   if (
     !checkBody(req.body, ["prenom", "nom", "codePostal", "mobile", "email"])
   ) {
@@ -17,7 +18,6 @@ router.post("/signup", (req, res) => {
 
   UserPro.findOne({ codePostal, mobile, email }).then((data) => {
     if (!data) {
-
       const newUserPro = new UserPro({
         prenom,
         nom,
@@ -92,19 +92,23 @@ router.put("/", (req, res) => {
   });
 });
 
-router.put('/image', (req,res) => {
-    if (!checkBody(req.body, ['token', 'image'])){
-        res.json({ result: false, error: 'Missing or empty fields' });
-        return;
-    };
-    UserPro.updateOne({token: req.body.token}, {$set: {image: req.body.image}})
-    .then((data)=>{
-        if(data){
-            UserPro.findOne({token: req.body.token}).then(res.json({result: true, image: req.body.image}));
-        } else {
-            res.json({result: false, error: "Erreur sur l'image"})
-        }
-    })
-})
+router.put("/image", (req, res) => {
+  if (!checkBody(req.body, ["token", "image"])) {
+    res.json({ result: false, error: "Missing or empty fields" });
+    return;
+  }
+  UserPro.updateOne(
+    { token: req.body.token },
+    { $set: { image: req.body.image } }
+  ).then((data) => {
+    if (data) {
+      UserPro.findOne({ token: req.body.token }).then(
+        res.json({ result: true, image: req.body.image })
+      );
+    } else {
+      res.json({ result: false, error: "Erreur sur l'image" });
+    }
+  });
+});
 
 module.exports = router;
