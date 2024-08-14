@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 
 router.post("/signup", (req, res) => {
   console.log(req.body);
-  const { prenom, nom, codePostal, mobile, email } = req.body; //clean code pour avoir des variables égales au req.body
+  const { prenom, nom, codePostal, mobile, email } = req.body;
   if (
     !checkBody(req.body, ["prenom", "nom", "codePostal", "mobile", "email"])
   ) {

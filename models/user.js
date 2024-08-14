@@ -9,8 +9,7 @@ const userSchema = mongoose.Schema({
   moyenPaiement: [
     {
       numCarte: Number,
-      dateExpirationMois: Number,
-      dateExpirationAnnee: Number,
+      dateExpiration: Number,
       CVC: Number,
     },
   ],

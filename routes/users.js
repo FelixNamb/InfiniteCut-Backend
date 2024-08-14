@@ -86,34 +86,29 @@ router.delete("/myCard", (req, res) => {
   });
 });
 
-router.post("/myCard", (req, res) => {
-  if (
-    !checkBody(req.body, [
-      "numCarte",
-      "dateExpirationMois",
-      "dateExpirationAnnee",
-      "CVC",
-    ])
-  ) {
-    res.json({ result: false, error: "Aucun moyen de paiement ajouté" });
-    return;
-  }
-  User.findOne({ moyenPaiement: req.body.moyenPaiement }).then((data) => {
-    if (data === null) {
-      const newCard = new Card({
-        numCarte: req.body.numCarte,
-        dateExpirationMois: req.body.dateExpirationMois,
-        dateExpirationAnnee: req.body.dateExpirationAnnee,
-        CVC: req.body.CVC,
-      });
-      newCard.save().then(() => {
-        res.json({ result: true });
-      });
-    } else {
-      res.json({ result: false, error: "Carte déjà existante" });
-    }
-  });
-});
+// router.put("/myCard/:token", (req, res) => {
+//   console.log("bjr je suis la route put");
+//   if (!checkBody(req.body, ["numCarte", "dateExpiration", "CVC"])) {
+//     res.json({ result: false, error: "Aucun moyen de paiement ajouté" });
+//     return;
+//   }
+//   User.findOne({ token: req.params.token }).then((data) => {
+//     console.log(data);
+//     if (data === null) {
+//       //utiliser $push ou $set pour mettre les champs à jour
+//       // const newCard = new Card({
+//         numCarte: req.body.numCarte,
+//         dateExpiration: req.body.expiration,
+//         CVC: req.body.CVC,
+//       // });
+//       newCard.save().then(() => {
+//         res.json({ result: true });
+//       });
+//     } else {
+//       res.json({ result: false, error: "Carte déjà existante" });
+//     }
+//   });
+// });
 
 router.put("/", (req, res) => {
   User.updateOne(
@@ -154,6 +149,10 @@ router.put("/formule", (req, res) => {
   User.findOne({ token: req.body.token })
     .populate("formule")
     .then((data) => {
+      console.log("data ===>", data);
+      //le if ne fonctionne que si une formule est deja enregistrée
+      //donc comme formule est initié a null -> si !data je mets à jour le champ formule
+      //avec la formule sélectionnée
       if (data) {
         formuleExisting = data.formule._ObjectId;
         User.updateOne(
@@ -171,17 +170,17 @@ router.put("/formule", (req, res) => {
     });
 });
 
-router.get("/:token", (req,res) => {
-  const {token} = req.params;
-  User.findOne({token})
-  .populate("formule")
-  .then(data => {
-    if(data){
-      res.json({result:true, user: data});
-    } else {
-      res.json({result: false});
-    }
-  })
-})
+router.get("/:token", (req, res) => {
+  const { token } = req.params;
+  User.findOne({ token })
+    .populate("formule")
+    .then((data) => {
+      if (data) {
+        res.json({ result: true, user: data });
+      } else {
+        res.json({ result: false });
+      }
+    });
+});
 
 module.exports = router;
