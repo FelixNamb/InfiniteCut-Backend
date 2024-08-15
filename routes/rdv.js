@@ -7,10 +7,22 @@ const { checkBody } = require("../module/checkBody");
 const User = require("../models/user");
 
 router.get("/", (req, res) => {
-  User.find({}).then((data) => {
+  Rdv.find({}).then((data) => {
     res.json({ result: true, rdvs: data });
   });
 });
+
+router.get("/:idUserPro", (req,res) => {
+  Rdv.find({userPro : req.params.idUserPro})
+  .populate("userPro")
+  .then(data => {
+    if(data.length >= 1){
+      res.json({result:true, data});
+    } else {
+      res.json({result:false});
+    }
+  })
+})
 
 router.post("/", (req, res) => {
   if (!checkBody(req.body, ["date", "ObjectId", "plageHoraire"])) {
@@ -29,7 +41,7 @@ router.post("/", (req, res) => {
         plageHoraire: req.body.plageHoraire,
       });
       newRdv.save().then(() => {
-        res.json({ result: true });
+        res.json({ result: true, newRdv: newRdv });
       });
     } else {
       res.json({ result: false, error: "Retour déjà envoyé." });

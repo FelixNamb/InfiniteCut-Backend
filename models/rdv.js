@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const rdvSchema = mongoose.Schema({
   date: Date,
-  userPro: { type: mongoose.Schema.Types.ObjectId, ref: "userPro" },
+  userPro: { type: mongoose.Schema.Types.ObjectId, ref: "userpros" },
   plageHoraire: String,
 });
 

@@ -94,6 +94,7 @@ router.put("/", (req, res) => {
 });
 
 router.put("/rdv", (req, res) => {
+  console.log(req.body);
   UserPro.findOne({token: req.body.token})
   .populate("rdvs")
   .then(dataFind => {
@@ -103,6 +104,7 @@ router.put("/rdv", (req, res) => {
         { $addToSet: { rdvs: req.body.ObjectId }
       })
       .then(dataUpdate => {
+        console.log(dataUpdate);
         if(dataUpdate.modifiedCount){
           res.json({result: true});
         } else {
