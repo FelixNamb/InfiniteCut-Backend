@@ -5,9 +5,24 @@ require("../models/connection");
 const Rdv = require("../models/rdv");
 const { checkBody } = require("../module/checkBody");
 const User = require("../models/user");
+const UserPro = require("../models/userPro");
 
-router.get("/", (req, res) => {
-  User.find({}).then((data) => {
+router.get("/getrdv/:token", (req, res) => {
+  User.findOne({ token: req.params.token })
+    .populate("mesRDV")
+    .populate("formule")
+    .then((data) => {
+      res.json({ result: true, rdvs: data });
+    });
+});
+
+router.get("/:token", (req, res) => {
+  console.log("req.params", req.params);
+  UserPro.findOne({ _id: req.params.userProId }).then((data) =>
+    console.log("userPro infos", data)
+  );
+
+  Rdv.find({}).then((data) => {
     res.json({ result: true, rdvs: data });
   });
 });
@@ -17,6 +32,7 @@ router.post("/", (req, res) => {
     res.json({ result: false, error: "Veuillez saisir votre retour" });
     return;
   }
+
   Rdv.findOne({
     date: req.body.date,
     userPro: req.body.ObjectId,
