@@ -5,30 +5,46 @@ require("../models/connection");
 const Rdv = require("../models/rdv");
 const { checkBody } = require("../module/checkBody");
 const User = require("../models/user");
+const UserPro = require("../models/userPro");
 
-router.get("/", (req, res) => {
+router.get("/getrdv/:token", (req, res) => {
+  User.findOne({ token: req.params.token })
+    .populate("mesRDV")
+    .populate("formule")
+    .then((data) => {
+      res.json({ result: true, rdvs: data });
+    });
+});
+
+router.get("/:token", (req, res) => {
+  console.log("req.params", req.params);
+  UserPro.findOne({ _id: req.params.userProId }).then((data) =>
+    console.log("userPro infos", data)
+  );
+
   Rdv.find({}).then((data) => {
     res.json({ result: true, rdvs: data });
   });
 });
 
-router.get("/:idUserPro", (req,res) => {
-  Rdv.find({userPro : req.params.idUserPro})
-  .populate("userPro")
-  .then(data => {
-    if(data.length >= 1){
-      res.json({result:true, data});
-    } else {
-      res.json({result:false});
-    }
-  })
-})
+router.get("/:idUserPro", (req, res) => {
+  Rdv.find({ userPro: req.params.idUserPro })
+    .populate("userPro")
+    .then((data) => {
+      if (data.length >= 1) {
+        res.json({ result: true, data });
+      } else {
+        res.json({ result: false });
+      }
+    });
+});
 
 router.post("/", (req, res) => {
   if (!checkBody(req.body, ["date", "ObjectId", "plageHoraire"])) {
     res.json({ result: false, error: "Veuillez saisir votre retour" });
     return;
   }
+
   Rdv.findOne({
     date: req.body.date,
     userPro: req.body.ObjectId,
