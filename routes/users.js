@@ -31,7 +31,7 @@ router.post("/signup", (req, res) => {
         mobile: req.body.mobile,
         motDePasse: hash,
         mesRDV: [],
-        formule: "",
+        formule: null,
         moyenPaiement: [],
         salonLike: [],
         token: uid2(32),
@@ -51,7 +51,7 @@ router.post("/signin", (req, res) => {
     return;
   }
   User.findOne({ email: req.body.email }).then((data) => {
-    if (data && bcrypt.compareSync(motDePasse, data.motDePasse)) {
+    if (data && bcrypt.compareSync(req.body.motDePasse, data.motDePasse)) {
       res.json({ result: true, token: data.token });
     } else {
       res.json({

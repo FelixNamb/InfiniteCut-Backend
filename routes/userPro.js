@@ -74,22 +74,42 @@ router.get("/", (req, res) => {
 });
 
 router.put("/", (req, res) => {
-  UserPro.updateOne(
-    { token: req.body.token },
-    { $addToSet: { formules: req.body._ObjectId } }
-  ).then(() => {
-    UserPro.findOne({ token: req.body.token })
-      .populate("formules")
-      .then((data) => {
-        if (data.formules.some((elt) => elt._ObjectId === req.body._ObjectId)) {
-          res.json({ result: true });
+  UserPro.findOne({token: req.body.token})
+  .populate("formules")
+  .then(dataFind => {
+    if(dataFind){
+      UserPro.updateOne(
+        { token: req.body.token },
+        { $addToSet: { formules: req.body._ObjectId }
+      })
+      .then(dataUpdate => {
+        if(dataUpdate.modifiedCount){
+          res.json({result: true});
         } else {
-          res.json({
-            result: false,
-            error: "Vous proposez déjà la formule sélectionnée",
-          });
+          res.json({result:false, error: "Vous possédez déjà cette formule"});
         }
       });
+    };
+  });
+});
+
+router.put("/rdv", (req, res) => {
+  UserPro.findOne({token: req.body.token})
+  .populate("rdvs")
+  .then(dataFind => {
+    if(dataFind){
+      UserPro.updateOne(
+        { token: req.body.token },
+        { $addToSet: { rdvs: req.body.ObjectId }
+      })
+      .then(dataUpdate => {
+        if(dataUpdate.modifiedCount){
+          res.json({result: true});
+        } else {
+          res.json({result:false, error: "Vous ne pouvez pas avoir deux fois le même rendez-vous"});
+        }
+      });
+    };
   });
 });
 
