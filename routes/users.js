@@ -182,32 +182,34 @@ router.put("/formule", (req, res) => {
     });
 });
 
-
 router.put("/rdv", (req, res) => {
-  User.findOne({token: req.body.token})
-  .populate("mesRDV")
-  .then(dataFind => {
-    if(dataFind){
-      User.updateOne(
-        { token: req.body.token },
-        { $addToSet: { mesRDV: req.body.ObjectId }
-      })
-      .then(dataUpdate => {
-        console.log(dataUpdate);
-        if(dataUpdate.modifiedCount){
-          res.json({result: true});
-        } else {
-          res.json({result:false, error: "Vous ne pouvez pas avoir deux fois le même rendez-vous"});
-        }
-      });
-    };
-  });
+  User.findOne({ token: req.body.token })
+    .populate("mesRDV")
+    .then((dataFind) => {
+      if (dataFind) {
+        User.updateOne(
+          { token: req.body.token },
+          { $addToSet: { mesRDV: req.body.ObjectId } }
+        ).then((dataUpdate) => {
+          console.log(dataUpdate);
+          if (dataUpdate.modifiedCount) {
+            res.json({ result: true });
+          } else {
+            res.json({
+              result: false,
+              error: "Vous ne pouvez pas avoir deux fois le même rendez-vous",
+            });
+          }
+        });
+      }
+    });
 });
 
 router.get("/:token", (req, res) => {
   const { token } = req.params;
   User.findOne({ token })
     .populate("formule")
+    .populate("mesRDV")
     .then((data) => {
       if (data) {
         res.json({ result: true, user: data });

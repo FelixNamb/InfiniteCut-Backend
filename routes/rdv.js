@@ -65,6 +65,18 @@ router.post("/", (req, res) => {
   });
 });
 
+router.get("/searchid/:id", (req, res) => {
+  Rdv.findOne({ _id: req.params.id })
+    .populate("userPro")
+    .then((data) => {
+      if (data) {
+        res.json({ result: true, rdv: data });
+      } else {
+        res.json({ result: false });
+      }
+    });
+});
+
 router.delete("/", (req, res) => {
   console.log(req.body);
 
@@ -74,12 +86,13 @@ router.delete("/", (req, res) => {
   }
 
   // Recherche d'abord si l'entrée existe
-  Rdv.findOne({
+  Rdv.deleteOne({
     date: new Date(req.body.date),
     plageHoraire: req.body.plageHoraire,
     userPro: req.body.ObjectId,
   })
     .then((data) => {
+      console.log(data);
       if (data) {
         console.log("Entrée trouvée :", data);
         // Si l'entrée existe, on passe à la suppression
