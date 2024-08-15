@@ -18,7 +18,6 @@ router.get("/", (req, res) => {
 });
 
 router.post("/signup", (req, res) => {
-  console.log(req.body.email, req.body.mobile, req.body.motDePasse);
   if (!checkBody(req.body, ["email", "mobile", "motDePasse"])) {
     res.json({ result: false, error: "Champs manquants" });
     return;
@@ -52,7 +51,7 @@ router.post("/signin", (req, res) => {
     return;
   }
   User.findOne({ email: req.body.email }).then((data) => {
-    if (data && bcrypt.compareSync(req.body.motDePasse, data.motDePasse)) {
+    if (data && bcrypt.compareSync(motDePasse, data.motDePasse)) {
       res.json({ result: true, token: data.token });
     } else {
       res.json({
@@ -172,7 +171,6 @@ router.put("/formule", (req, res) => {
   User.findOne({ token: req.body.token })
     .populate("formule")
     .then((data) => {
-      console.log(data);
       if (data) {
         User.updateOne(
           { token: req.body.token },

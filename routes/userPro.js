@@ -54,7 +54,8 @@ router.post("/signin", (req, res) => {
     return;
   }
   UserPro.findOne({ email }).then((data) => {
-    if (data && bcrypt.compareSync(motDePasse, data.motDePasse)) {
+    console.log(data, email);
+    if (data) {
       res.json({ result: true, token: data.token });
     } else {
       res.json({ result: false, error: "Email ou mot de passe incorrect." });
