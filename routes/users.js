@@ -208,6 +208,7 @@ router.get("/:token", (req, res) => {
   const { token } = req.params;
   User.findOne({ token })
     .populate("formule")
+    .populate("mesRDV")
     .then((data) => {
       if (data) {
         res.json({ result: true, user: data });

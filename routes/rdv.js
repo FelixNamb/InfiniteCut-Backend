@@ -4,28 +4,18 @@ var router = express.Router();
 require("../models/connection");
 const Rdv = require("../models/rdv");
 const { checkBody } = require("../module/checkBody");
-const User = require("../models/user");
-const UserPro = require("../models/userPro");
 
-router.get("/getrdv/:token", (req, res) => {
-  User.findOne({ token: req.params.token })
-    .populate("mesRDV")
-    .populate("formule")
-    .then((data) => {
-      res.json({ result: true, rdvs: data });
-    });
-});
-
-router.get("/:token", (req, res) => {
-  console.log("req.params", req.params);
-  UserPro.findOne({ _id: req.params.userProId }).then((data) =>
-    console.log("userPro infos", data)
-  );
-
-  Rdv.find({}).then((data) => {
-    res.json({ result: true, rdvs: data });
-  });
-});
+router.get("/searchid/:id", (req,res) =>{
+  Rdv.findOne({_id: req.params.id})
+  .populate("userPro")
+  .then(data => {
+    if(data){
+      res.json({result: true, rdv: data});
+    } else {
+      res.json({result:false});
+    }
+  })
+})
 
 router.get("/:idUserPro", (req, res) => {
   Rdv.find({ userPro: req.params.idUserPro })
